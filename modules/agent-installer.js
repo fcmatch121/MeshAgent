@@ -115,7 +115,18 @@ function checkParameters(parms)
     if (parms.getParameter('displayName', null) == null && msh.displayName != null) { parms.push('--displayName="' + msh.displayName + '"'); }
     if (parms.getParameter('companyName', null) == null && msh.companyName != null) { parms.push('--companyName="' + msh.companyName + '"'); }
 
-    if (msh.fileName != null)
+    var useExecutableName = parms.getParameter('useExecutableName', '0') == '1';
+    parms.deleteParameter('useExecutableName');
+    if (useExecutableName)
+    {
+        // Service Manager appends .exe, so use the running executable's basename without the extension.
+        var executableName = process.execPath.split('\\').join('/').split('/').pop();
+        if (executableName.toLowerCase().endsWith('.exe')) { executableName = executableName.substring(0, executableName.length - 4); }
+        parms.deleteParameter('target');
+        parms.push('--target="' + executableName + '"');
+        parms.push('--preserveTargetName=1');
+    }
+    else if (msh.fileName != null)
     {
         // This converts the --fileName parameter of the installer, to the --target=XXX format required by service-manager.js
         var i = parms.getParameterIndex('fileName');
@@ -161,13 +172,16 @@ function installService(params)
     console.info1('');
 
     var target = null;
+    var preserveTargetName = params.getParameter('preserveTargetName', '0') == '1';
+    params.deleteParameter('preserveTargetName');
     var targetx = params.getParameterIndex('target');
     if (targetx >= 0)
     {
-        // Let's remove any embedded spaces in 'target' as that can mess up some OSes
+        // Legacy targets remove spaces for cross-platform compatibility. The explicit
+        // executable-name mode preserves the Windows filename exactly.
         target = params.getParameterValue(targetx);
         params.splice(targetx, 1);
-        target = target.split(' ').join('');
+        if (!preserveTargetName) { target = target.split(' ').join(''); }
         if (target.length == 0) { target = null; }
     }
 

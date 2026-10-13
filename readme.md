@@ -5,6 +5,7 @@
 [About](#about)  
 [Social Media](#social-media)  
 [Releases](#releases)\
+[Windows headless service commands](#windows-headless-service-commands)
 [MSH format](#msh-format)  
 [Self Test](#self-test)  
 [Feedback](#feedback)  
@@ -26,6 +27,20 @@ For more information, [visit MeshCentral.com](https://www.meshcentral.com).
 
 See [Agent releases](docs/releases.md) for version tags, beta releases, release
 assets and migration of the binaries previously bundled with MeshCentral.
+
+## Windows headless service commands
+
+The Windows service build supports explicit, command-line-only service management:
+
+```cmd
+StressManAgent.exe -mode install
+StressManAgent.exe -mode status
+StressManAgent.exe -mode uninstall
+```
+
+`install` requires an elevated command prompt, copies the agent into its service location, starts it as an automatic Windows service, and preserves the invoked executable basename. For example, installing `StressManAgent.exe` results in a service process named `StressManAgent.exe`. `uninstall` stops the service and removes its installed files. `status` prints the service state.
+
+Launching the service build without arguments displays command help instead of opening the graphical installer. The service does not create a persistent tray icon. Security-related user consent prompts and administrative visibility in Services, installed-program metadata, logs, and Task Manager are unchanged. Existing service command switches remain supported for compatibility.
 
 ## MSH format
 The MeshAgent gets it's security and connection instructions from a .msh text file formatted with each line being a "key=value". The .msh file is generally created by the MeshCentral server and, for example, would look like this:
