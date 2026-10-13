@@ -452,6 +452,43 @@ int wmain(int argc, char* wargv[])
 		WideCharToMultiByte(CP_UTF8, 0, (LPCWCH)wargv[argvi], -1, argv[argvi], argvsz, NULL, NULL);
 	}
 
+	if (argc > 2 && strcasecmp(argv[1], "-mode") == 0)
+	{
+		const char *modeSwitch = NULL;
+		int useExecutableName = 0;
+		if (strcasecmp(argv[2], "install") == 0)
+		{
+			modeSwitch = "-fullinstall";
+			useExecutableName = 1;
+		}
+		else if (strcasecmp(argv[2], "uninstall") == 0)
+		{
+			modeSwitch = "-fulluninstall";
+		}
+		else if (strcasecmp(argv[2], "status") == 0)
+		{
+			modeSwitch = "state";
+		}
+		else
+		{
+			fprintf(stderr, "Unknown mode: %s. Use install, uninstall or status.\r\n", argv[2]);
+			wmain_free(argv);
+			return(2);
+		}
+
+		ILibMemory_Free(argv[1]);
+		ILibMemory_Free(argv[2]);
+		argv[1] = ILibString_Copy(modeSwitch, 0);
+		for (argvi = 2; argvi < argc - 1; ++argvi) { argv[argvi] = argv[argvi + 1]; }
+		--argc;
+		argv[argc] = NULL;
+		if (useExecutableName != 0)
+		{
+			argv[argc++] = ILibString_Copy("--useExecutableName=1", 0);
+			argv[argc] = NULL;
+		}
+	}
+
 	if (argc > 1 && (strcasecmp(argv[1], "-finstall") == 0 || strcasecmp(argv[1], "-funinstall") == 0 ||
 		strcasecmp(argv[1], "-fulluninstall") == 0 || strcasecmp(argv[1], "-fullinstall") == 0 ||
 		strcasecmp(argv[1], "-install") == 0 || strcasecmp(argv[1], "-uninstall") == 0 ||
@@ -911,9 +948,21 @@ int wmain(int argc, char* wargv[])
 					argc = 1;
 				}
 
+				if (argc == 1 && skip == 0)
+				{
+					printf("StressMan Agent uses command-line service management.\r\n");
+					printf("  -mode install      Install and start the Windows service.\r\n");
+					printf("  -mode uninstall    Stop and remove the Windows service.\r\n");
+					printf("  -mode status       Display the Windows service state.\r\n");
+					skip = 1;
+				}
+
 				if (argc != 1)
 				{
 					printf("Mesh Agent available switches:\r\n");
+					printf("  -mode install      Install and start the Windows service.\r\n");
+					printf("  -mode uninstall    Stop and remove the Windows service.\r\n");
+					printf("  -mode status       Display the Windows service state.\r\n");
 					printf("  run               Start as a console agent.\r\n");
 					printf("  connect           Start as a temporary console agent.\r\n");
 					printf("  start             Start the service.\r\n");
