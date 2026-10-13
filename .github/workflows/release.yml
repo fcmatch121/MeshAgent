@@ -51,11 +51,11 @@ jobs:
           merge-multiple: true
       - name: Verify release files
         run: node .github/scripts/agent-release.js check "$GITHUB_REF_NAME" release
-      - name: Create draft release
+      - name: Create checksums
+        shell: bash
+        run: (cd release && sha384sum $(find . -maxdepth 1 -type f ! -name SHA384SUMS.txt -printf '%f\n' | sort) > SHA384SUMS.txt)
+      - name: Publish StressMan Agent release
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
-        run: |
-          flags=()
-          if [[ "$GITHUB_REF_NAME" == *-* ]]; then flags+=(--prerelease); fi
-          gh release create "$GITHUB_REF_NAME" release/* --verify-tag --draft --generate-notes --title "$GITHUB_REF_NAME" "${flags[@]}"
+        run: gh release create "$GITHUB_REF_NAME" release/* --verify-tag --generate-notes --title "StressMan Agent $GITHUB_REF_NAME"

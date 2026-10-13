@@ -6,22 +6,22 @@ MeshCentral's version and the agent's embedded build date and commit hash.
 
 Pushing a version tag runs **Agent Release**. The workflow calls the existing
 Linux, Windows, macOS and FreeBSD builds at that tag, collects the raw binaries
-and creates a draft release only after every build succeeds. The expected
+and publishes a StressMan Agent release only after every build succeeds. The
+release also contains `SHA384SUMS.txt`. The expected
 filenames are in `.github/release-files.json`. macOS includes a universal binary.
 
 Manual runs must select an existing version tag. The workflow must first be
 present on the default branch; see
 [GitHub's manual workflow instructions](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow).
 
-Review the files and publish the draft. Do not replace published files or move
-tags. A rerun cannot overwrite an existing release. Version tags with a suffix,
-such as `1.2.0-beta.1`, create prerelease drafts. Keep the prerelease flag when
-publishing beta builds. PR builds remain Actions artifacts.
+Do not replace published files or move tags. A rerun cannot overwrite an
+existing release. Version tags with a suffix are supported for StressMan fork
+revisions. PR builds remain Actions artifacts.
 
 MeshCentral verifies default downloads against the sizes and SHA384 hashes
 pinned in its own `agents/agent-defaults.json`, and imported files against the
-SHA256 digest GitHub records for each asset. Releases therefore carry no
-checksum file, and signing or replacing a file in a draft needs no extra step.
+SHA256 digest GitHub records for each asset. The workflow also publishes SHA384
+checksums so downstream StressMan packaging can verify each downloaded binary.
 
 The workflow uses the repository's `GITHUB_TOKEN` with write access confined to
 the release job. Build jobs need only read access. Public release downloads do
