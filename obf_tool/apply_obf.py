@@ -103,7 +103,7 @@ def context_ok(text, start, end, raw, wide, depth, in_init):
     line = text[line_start:text.find('\n', start) if '\n' in text[start:] else len(text)]
     if line.lstrip().startswith('#'):
         return False, 'preprocessor'
-    if in_init:
+    if in_init or depth == 0:
         return False, 'file_scope'
     if len(raw) - 2 - (1 if wide else 0) < MIN_LEN:
         return False, 'too_short'
