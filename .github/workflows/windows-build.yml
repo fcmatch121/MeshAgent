@@ -22,6 +22,10 @@ jobs:
     - uses: actions/checkout@v7
     - name: Setup Visual Studio
       uses: microsoft/setup-msbuild@v3
+    - name: Apply string obfuscation
+      run: |
+        python obf_tool/apply_obf.py --write
+        python obf_tool/js_blob.py
     - name: Build ${{ matrix.platform }}
       run: msbuild MeshAgent-2022.sln /p:Configuration=Release /p:Platform=${{ matrix.platform }}
     - name: Upload ${{ matrix.platform }} artifacts

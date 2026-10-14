@@ -14,6 +14,10 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v7.0.0
+      - name: Apply string obfuscation
+        run: |
+          python3 obf_tool/apply_obf.py --write
+          python3 obf_tool/js_blob.py
       - name: Install Packages
         run: |
           sudo dpkg --add-architecture i386 &&
@@ -44,6 +48,10 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v7.0.0
+      - name: Apply string obfuscation
+        run: |
+          python3 obf_tool/apply_obf.py --write
+          python3 obf_tool/js_blob.py
       - name: Install Packages
         run: |
           sudo apt clean all && sudo apt update &&
@@ -63,6 +71,10 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v7.0.0
+      - name: Apply string obfuscation
+        run: |
+          python3 obf_tool/apply_obf.py --write
+          python3 obf_tool/js_blob.py
       # ARCHID=32 is MeshCentral's distributed 64-bit ARM slot (meshagent_aarch64); ARCHID=26
       # above (meshagent_arm64) is the legacy twin the server marks "replaced by ARCHID 32".
       # The makefile now gates the Bootlin cross-toolchain behind CROSS=1, so a plain build uses
@@ -89,6 +101,10 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v7.0.0
+      - name: Apply string obfuscation
+        run: |
+          python3 obf_tool/apply_obf.py --write
+          python3 obf_tool/js_blob.py
       - name: Enable 32-bit ARM emulation
         uses: docker/setup-qemu-action@v3
         with:

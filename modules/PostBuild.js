@@ -42,10 +42,18 @@ hash.on('hash', function (buffer)
         stream1.output.on('finish', OnFinish);
         stream1.pipe(stream1.output);
 
-        stream2 = fs.createReadStream(pdbFileName, { flags: "rb" });
-        stream2.output = fs.createWriteStream(newPdbFileName, { flags: "wb+" });
-        stream2.output.on('finish', OnFinish);
-        stream2.pipe(stream2.output);
+        if (fs.existsSync(pdbFileName))
+        {
+            stream2 = fs.createReadStream(pdbFileName, { flags: "rb" });
+            stream2.output = fs.createWriteStream(newPdbFileName, { flags: "wb+" });
+            stream2.output.on('finish', OnFinish);
+            stream2.pipe(stream2.output);
+        }
+        else
+        {
+            console.log('no pdb to archive (debug info stripped)');
+            --pending;
+        }
     }
     else
     {
