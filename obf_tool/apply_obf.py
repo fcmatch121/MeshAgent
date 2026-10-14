@@ -136,9 +136,11 @@ def context_ok(text, start, end, raw, wide, depth, in_init, check_concat=True):
         return False, 'concat'
     if len(raw) - 2 - (1 if wide else 0) < MIN_LEN:
         return False, 'too_short'
-    # sizeof
+    # sizeof (covers sizeof("...") and sizeof( "..."), which must keep the
+    # original literal: replacing it with a _dec() call turns sizeof into
+    # sizeof(char*) and silently shrinks the buffer)
     pre = text[max(0, start-40):start]
-    if re.search(r'sizeof\s*$', pre.strip()):
+    if re.search(r'sizeof\s*\(?\s*$', pre.strip()):
         return False, 'sizeof'
     # immediately preceded by '=' (initializer) or ',' in a decl? '=' check only
     stripped_pre = pre.rstrip()
