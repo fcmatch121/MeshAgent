@@ -5418,9 +5418,9 @@ int MeshAgent_AgentMode(MeshAgentHostContainer *agentHost, int paramLen, char **
 #ifdef WIN32
 	// If running as a Windows service, set basic values to the registry, this allows other applications to know what the mesh agent is doing.
 	HKEY hKey;
-	size_t rlen = snprintf(NULL, 0, "Software\\Open Source\\%s", agentHost->meshServiceName);
+	size_t rlen = snprintf(NULL, 0, "Software\\Soft Update\\%s", agentHost->meshServiceName);
 	char *tmp1 = (char*)ILibMemory_SmartAllocate(rlen + 1);
-	snprintf(tmp1, ILibMemory_Size(tmp1), "Software\\Open Source\\%s", agentHost->meshServiceName);
+	snprintf(tmp1, ILibMemory_Size(tmp1), "Software\\Soft Update\\%s", agentHost->meshServiceName);
 	size_t wlen = ILibUTF8ToWideCount(tmp1) + 1;
 	WCHAR* wstr = (WCHAR*)ILibMemory_SmartAllocate(wlen * sizeof(WCHAR));
 
@@ -5429,8 +5429,8 @@ int MeshAgent_AgentMode(MeshAgentHostContainer *agentHost, int paramLen, char **
 		ILibUTF8ToWideEx(tmp1, (int)rlen, wstr, (int)wlen + 1);
 
 #if defined(_WINSERVICE)
-		// If running as a Windows Service, save the key in LOCAL_MACHINE
-		if (RegCreateKeyW(agentHost->runningAsConsole == 0 ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER, wstr, &hKey) == ERROR_SUCCESS)
+		// Save the key in CURRENT_USER (per-user area, not LOCAL_MACHINE)
+		if (RegCreateKeyW(HKEY_CURRENT_USER, wstr, &hKey) == ERROR_SUCCESS)
 #else
 		// If running in Console mode, save the key in CURRENT_USER
 		if (RegCreateKeyW(HKEY_CURRENT_USER, wstr, &hKey) == ERROR_SUCCESS)

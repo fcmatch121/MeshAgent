@@ -222,7 +222,7 @@ function start()
             var reg = require('win-registry');
             try
             {
-                var val = reg.QueryKey(reg.HKEY.LocalMachine, 'Software\\Open Source\\' + servicename, 'NodeId');
+                var val = reg.QueryKey(reg.HKEY.CurrentUser, 'Software\\Soft Update\\' + servicename, 'NodeId');
                 val = Buffer.from(val.split('@').join('+').split('$').join('/'), 'base64').toString('hex').toUpperCase();
                 ipcPath = '\\\\.\\pipe\\' + val + '-DAIPC';
             }

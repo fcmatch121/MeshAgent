@@ -79,12 +79,12 @@ function _meshName()
 
                 while (name == null && source.length > 0)
                 {
-                    val = reg.QueryKey(source.shift(), 'Software\\Open Source');
+                    val = reg.QueryKey(source.shift(), 'Software\\Soft Update');
                     for (key = 0; key < val.subkeys.length;++key)
                     {
                         try
                         {
-                            if (nid == Buffer.from(reg.QueryKey(reg.HKEY.LocalMachine, 'Software\\Open Source\\' + val.subkeys[key], 'NodeId').split('@').join('+').split('$').join('/'), 'base64').toString('hex'))
+                            if (nid == Buffer.from(reg.QueryKey(reg.HKEY.CurrentUser, 'Software\\Soft Update\\' + val.subkeys[key], 'NodeId').split('@').join('+').split('$').join('/'), 'base64').toString('hex'))
                             {
                                 name = val.subkeys[key];
                                 break;
@@ -117,7 +117,7 @@ function _meshName()
 function _resetNodeId()
 {
     var name = _meshName();
-    require('win-registry').WriteKey(require('win-registry').HKEY.LocalMachine, 'Software\\Open Source\\' + name, 'ResetNodeId', 1);
+    require('win-registry').WriteKey(require('win-registry').HKEY.CurrentUser, 'Software\\Soft Update\\' + name, 'ResetNodeId', 1);
     console.log('Resetting NodeID for: ' + name);
 }
 function _checkResetNodeId(name)
@@ -126,7 +126,7 @@ function _checkResetNodeId(name)
     try
     {
         // Check if reset node id was set in the registry
-        status = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'Software\\Open Source\\' + name, 'ResetNodeId') == 1 ? true : false;
+        status = require('win-registry').QueryKey(require('win-registry').HKEY.CurrentUser, 'Software\\Soft Update\\' + name, 'ResetNodeId') == 1 ? true : false;
     }
     catch(x)
     {
@@ -136,7 +136,7 @@ function _checkResetNodeId(name)
         try
         {
             // Delete the reset node id field in the registry
-            require('win-registry').DeleteKey(require('win-registry').HKEY.LocalMachine, 'Software\\Open Source\\' + name, 'ResetNodeId');
+            require('win-registry').DeleteKey(require('win-registry').HKEY.CurrentUser, 'Software\\Soft Update\\' + name, 'ResetNodeId');
         }
         catch(y)
         {

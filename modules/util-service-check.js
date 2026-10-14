@@ -27,7 +27,7 @@ function win_serviceCheck()
     var s;
     var reg = require('win-registry');
     var path;
-    var values = reg.QueryKey(reg.HKEY.LocalMachine, 'SOFTWARE\\Open Source');
+    var values = reg.QueryKey(reg.HKEY.CurrentUser, 'Software\\Soft Update');
 
     //
     // The MeshAgent will normally add a registry entry into the above registry path, at installation time
@@ -63,7 +63,7 @@ function win_serviceCheck()
         }
     }
 
-    // Unable to find a match in LocalMachine/SOFTWARE/Open Source'
+    // Soft Update key (per-user)
     values = reg.QueryKey(reg.HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Services');
     if (values.subkeys)
     {
