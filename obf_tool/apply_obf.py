@@ -114,7 +114,7 @@ def lex_strings(text):
             continue
         i += 1
 
-def context_ok(text, start, end, raw, wide, depth, in_init):
+def context_ok(text, start, end, raw, wide, depth, in_init, check_concat=True):
     """Return (ok, reason)."""
     line_start = text.rfind('\n', 0, start) + 1
     line = text[line_start:text.find('\n', start) if '\n' in text[start:] else len(text)]
@@ -122,12 +122,13 @@ def context_ok(text, start, end, raw, wide, depth, in_init):
         return False, 'preprocessor'
     if in_init or depth == 0:
         return False, 'file_scope'
-    # string concatenation chain: previous non-space char is a closing quote
-    j = start - 1
-    while j >= 0 and text[j] in ' \t\n\r':
-        j -= 1
-    if j >= 0 and text[j] == '"':
-        return False, 'concat'
+    if check_concat:
+        # string concatenation chain: previous non-space char is a closing quote
+        j = start - 1
+        while j >= 0 and text[j] in ' \t\n\r':
+            j -= 1
+        if j >= 0 and text[j] == '"':
+            return False, 'concat'
     k2 = end
     while k2 < len(text) and text[k2] in ' \t\n\r':
         k2 += 1
@@ -144,11 +145,12 @@ def context_ok(text, start, end, raw, wide, depth, in_init):
     if stripped_pre.endswith('=') or re.search(r'=\s*$', stripped_pre):
         return False, 'initializer'
     # adjacent concatenation: next non-ws char is a quote
-    j = end
-    while j < len(text) and text[j] in ' \t\n':
-        j += 1
-    if j < len(text) and (text[j] == '"' or (text[j] in 'LuU' and j+1 < len(text) and text[j+1] == '"')):
-        return False, 'concat'
+    if check_concat:
+        j = end
+        while j < len(text) and text[j] in ' \t\n':
+            j += 1
+        if j < len(text) and (text[j] == '"' or (text[j] in 'LuU' and j+1 < len(text) and text[j+1] == '"')):
+            return False, 'concat'
     return True, ''
 
 def unescape(raw, wide):
@@ -203,20 +205,30 @@ def main():
         text = open(path, encoding='utf-8', errors='ignore').read()
         repls = []
         skipped = {}
-        for (s, e, raw, wide, depth, in_init) in lex_strings(text):
-            ok, reason = context_ok(text, s, e, raw, wide, depth, in_init)
+        # group whitespace-adjacent literals into concatenation chains
+        chains = []
+        for occ in lex_strings(text):
+            if chains:
+                prev = chains[-1]
+                if text[prev[1]:occ[0]].strip() == '':
+                    chains[-1] = (prev[0], occ[1], prev[2] + [occ], occ[3], occ[4], occ[5])
+                    continue
+            chains.append((occ[0], occ[1], [occ], occ[3], occ[4], occ[5]))
+        for (s, e, parts, wide, depth, in_init) in chains:
+            ok, reason = context_ok(text, s, e, parts[-1][2], wide, depth, in_init, check_concat=False)
             if not ok:
                 skipped[reason] = skipped.get(reason, 0) + 1
                 continue
-            units = unescape(raw, wide)
+            units = []
+            for p in parts:
+                units.extend(unescape(p[2], p[3]))
             k = (tuple(units), wide)
-            big = (len(units) > MAX_LEN) or in_init and False
+            big = len(units) > MAX_LEN
             if k not in all_strings:
-                name = 'obf_%s%s_%04x' % ('j' if big else ('w' if wide else 'n'), '', len(all_strings))
+                name = 'obf_%s_%04x' % ('j' if big else ('w' if wide else 'n'), len(all_strings))
                 all_strings[k] = {'name': name, 'wide': wide, 'big': big, 'units': list(k[0])}
-            elif big and not all_strings[k].get('big'):
-                pass
-            repls.append((s, e, all_strings[k]['name'] + ('_buf' if all_strings[k].get('big') else '_dec')))
+            meta = all_strings[k]
+            repls.append((s, e, meta['name'] + ('_buf' if meta.get('big') else '_dec')))
         if write:
             for (s, e, name) in sorted(repls, reverse=True):
                 text = text[:s] + name + '()' + text[e:]
