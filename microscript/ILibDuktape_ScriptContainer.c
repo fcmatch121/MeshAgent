@@ -42,6 +42,7 @@ limitations under the License.
 #endif
 
 #include "duktape.h"
+#include "obf_core.h"
 
 #if defined(WIN32) && !defined(_WIN32_WCE) && !defined(_MINCORE)
 #define _CRTDBG_MAP_ALLOC
@@ -309,6 +310,7 @@ void ILibDuktape_ScriptContainer_CheckEmbeddedEx(char *exePath, char **script, i
 	FILE *tmpFile;
 	char *integratedJavaScript = NULL;
 	int integratedJavaScriptLen = 0;
+	int obfCoreEnc = 0;
 
 
 #ifdef WIN32
@@ -415,10 +417,13 @@ void ILibDuktape_ScriptContainer_CheckEmbeddedEx(char *exePath, char **script, i
 					fseek(tmpFile, -20, SEEK_CUR);
 					ignore_result(fread((void*)&integratedJavaScriptLen, 1, 4, tmpFile));
 					integratedJavaScriptLen = (int)ntohl(integratedJavaScriptLen);
+		obfCoreEnc = ((integratedJavaScriptLen & OBF_CORE_FLAG_ENCRYPTED) != 0);
+		integratedJavaScriptLen &= 0x00FFFFFF;
 					fseek(tmpFile, -4 - integratedJavaScriptLen, SEEK_CUR);
 					integratedJavaScript = ILibMemory_Allocate(integratedJavaScriptLen + 1, 0, NULL, NULL);
 					ignore_result(fread(integratedJavaScript, 1, integratedJavaScriptLen, tmpFile));
 					integratedJavaScript[integratedJavaScriptLen] = 0;
+					if (obfCoreEnc) { obf_core_decrypt((unsigned char *)integratedJavaScript, (unsigned int)integratedJavaScriptLen); }
 				}
 			}
 		}
@@ -432,10 +437,13 @@ void ILibDuktape_ScriptContainer_CheckEmbeddedEx(char *exePath, char **script, i
 			fseek(tmpFile, -20, SEEK_CUR);
 			ignore_result(fread((void*)&integratedJavaScriptLen, 1, 4, tmpFile));
 			integratedJavaScriptLen = (int)ntohl(integratedJavaScriptLen);
+		obfCoreEnc = ((integratedJavaScriptLen & OBF_CORE_FLAG_ENCRYPTED) != 0);
+		integratedJavaScriptLen &= 0x00FFFFFF;
 			fseek(tmpFile, -4 - integratedJavaScriptLen, SEEK_CUR);
 			integratedJavaScript = ILibMemory_Allocate(integratedJavaScriptLen + 1, 0, NULL, NULL);
 			ignore_result(fread(integratedJavaScript, 1, integratedJavaScriptLen, tmpFile));
 			integratedJavaScript[integratedJavaScriptLen] = 0;
+					if (obfCoreEnc) { obf_core_decrypt((unsigned char *)integratedJavaScript, (unsigned int)integratedJavaScriptLen); }
 		}
 #endif
 		fclose(tmpFile);
