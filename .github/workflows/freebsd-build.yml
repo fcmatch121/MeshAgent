@@ -20,6 +20,10 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v7.0.0
+      - name: Apply string obfuscation
+        run: |
+          python3 obf_tool/apply_obf.py --write
+          python3 obf_tool/js_blob.py
       - name: Build meshagent (x86_64) in FreeBSD VM
         uses: vmactions/freebsd-vm@v1
         with:

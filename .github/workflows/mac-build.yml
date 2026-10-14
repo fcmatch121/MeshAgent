@@ -15,6 +15,10 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v7.0.0
+      - name: Apply string obfuscation
+        run: |
+          python3 obf_tool/apply_obf.py --write
+          python3 obf_tool/js_blob.py
       - name: Build meshagent (arm64, KVM enabled)
         run: make -j4 macos ARCHID=29
       - name: Upload artifacts
@@ -30,6 +34,10 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v7.0.0
+      - name: Apply string obfuscation
+        run: |
+          python3 obf_tool/apply_obf.py --write
+          python3 obf_tool/js_blob.py
       - name: Build meshagent (x86_64, KVM enabled)
         run: make -j4 macos ARCHID=16
       - name: Upload artifacts
