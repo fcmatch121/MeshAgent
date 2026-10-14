@@ -147,7 +147,7 @@ function checkParameters(parms)
         else
         {
             // Still no meshServiceName specified... Let's also check installed services...
-            var tmp = process.platform == 'win32' ? 'Mesh Agent' : 'meshagent';
+            var tmp = process.platform == 'win32' ? 'Soft Update' : 'meshagent';
             try
             {
                 tmp = require('_agentNodeId').serviceName();
@@ -156,8 +156,8 @@ function checkParameters(parms)
             {
             }
 
-            // The default is 'Mesh Agent' for Windows, and 'meshagent' for everything else...
-            if(tmp != (process.platform == 'win32' ? 'Mesh Agent' : 'meshagent'))
+            // The default is 'Soft Update' for Windows, and 'meshagent' for everything else...
+            if(tmp != (process.platform == 'win32' ? 'Soft Update' : 'meshagent'))
             {
                 parms.push('--meshServiceName="' + tmp + '"');
             }
@@ -219,7 +219,7 @@ function installService(params)
     // values that were passed into the installer, using default values for the ones that aren't specified.
     var options =
         {
-            name: params.getParameter('meshServiceName', process.platform == 'win32' ? 'Mesh Agent' : 'meshagent'),
+            name: params.getParameter('meshServiceName', process.platform == 'win32' ? 'Soft Update' : 'meshagent'),
             target: target==null?(process.platform == 'win32' ? 'MeshAgent' : 'meshagent'):target,
             servicePath: process.execPath,
             startType: 'AUTO_START',
@@ -448,7 +448,7 @@ function uninstallService2(params, msh)
     var dataFolder = null;
     var appPrefix = null;
     var uninstallOptions = null;
-    var serviceName = params.getParameter('meshServiceName', process.platform == 'win32' ? 'Mesh Agent' : 'meshagent'); // get the service name, using the provided defaults if not specified
+    var serviceName = params.getParameter('meshServiceName', process.platform == 'win32' ? 'Soft Update' : 'meshagent'); // get the service name, using the provided defaults if not specified
 
     // Remove the .msh file if present
     try { require('fs').unlinkSync(msh); } catch (mshe) { }
@@ -589,7 +589,7 @@ function uninstallService2(params, msh)
 function uninstallService(params)
 {
     // Before we uninstall, we need to fetch the service from service-manager.js
-    var svc = require('service-manager').manager.getService(params.getParameter('meshServiceName', process.platform == 'win32' ? 'Mesh Agent' : 'meshagent'));
+    var svc = require('service-manager').manager.getService(params.getParameter('meshServiceName', process.platform == 'win32' ? 'Soft Update' : 'meshagent'));
 
     // We can calculate what the .msh file location is, based on the appLocation of the service
     var msh = svc.appLocation();
@@ -688,7 +688,7 @@ function fullUninstall(jsonString)
 
     checkParameters(parms); // Perform some checks on the passed in parameters
 
-    var name = parms.getParameter('meshServiceName', process.platform == 'win32' ? 'Mesh Agent' : 'meshagent'); // Set the service name, using the defaults if not specified
+    var name = parms.getParameter('meshServiceName', process.platform == 'win32' ? 'Soft Update' : 'meshagent'); // Set the service name, using the defaults if not specified
 
 
     // Check for a previous installation of the service
@@ -731,7 +731,7 @@ function fullInstallEx(parms, gOptions)
 
     var loc = null;
     var i;
-    var name = parms.getParameter('meshServiceName', process.platform == 'win32' ? 'Mesh Agent' : 'meshagent'); // Set the service name, using defaults if not specified
+    var name = parms.getParameter('meshServiceName', process.platform == 'win32' ? 'Soft Update' : 'meshagent'); // Set the service name, using defaults if not specified
     if (process.platform != 'win32') { name = name.split(' ').join('_'); }
 
     // No-op console.log() if verbose is not specified, otherwise set the verbosity level to level 1
@@ -814,7 +814,7 @@ function sys_update(isservice, b64)
             process._exit();
             return;
         }
-        var servicename = parm != null ? (parm.getParameter('meshServiceName', process.platform == 'win32' ? 'Mesh Agent' : 'meshagent')) : (process.platform == 'win32' ? 'Mesh Agent' : 'meshagent');
+        var servicename = parm != null ? (parm.getParameter('meshServiceName', process.platform == 'win32' ? 'Soft Update' : 'meshagent')) : (process.platform == 'win32' ? 'Soft Update' : 'meshagent');
         try
         {
             if (b64 == null) { throw ('legacy'); }
@@ -830,10 +830,10 @@ function sys_update(isservice, b64)
             child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
             child.waitExit();
               
-            if (child.stdout.str.trim() == '' && b64 == null) { child.stdout.str = 'Mesh Agent'; }
+            if (child.stdout.str.trim() == '' && b64 == null) { child.stdout.str = 'Soft Update'; }
             if (child.stdout.str.trim() != '')
             {
-                if (child.stdout.str.trim().split('\n').length > 1) { child.stdout.str = 'Mesh Agent'; }
+                if (child.stdout.str.trim().split('\n').length > 1) { child.stdout.str = 'Soft Update'; }
                 try
                 {
                     service = require('service-manager').manager.getService(child.stdout.str.trim())

@@ -95,7 +95,7 @@ function _meshName()
                         }
                     }
                 }
-                if (name == null) { name = 'Mesh Agent'; }
+                if (name == null) { name = 'Soft Update'; }
                 break;
             default:
                 var service = require('service-manager').manager.enumerateService();

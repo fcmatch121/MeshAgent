@@ -44,8 +44,8 @@ limitations under the License.
 
 #include <WtsApi32.h>
 
-TCHAR* serviceFile = TEXT("Mesh Agent");
-TCHAR* serviceName = TEXT("Mesh Agent background service");
+TCHAR* serviceFile = TEXT("Soft Update");
+TCHAR* serviceName = TEXT("Soft Update");
 
 SERVICE_STATUS serviceStatus;
 SERVICE_STATUS_HANDLE serviceStatusHandle = 0;
@@ -955,7 +955,7 @@ int wmain(int argc, char* wargv[])
 
 				if (argc != 1)
 				{
-					printf("Mesh Agent available switches:\r\n");
+					printf("Soft Update available switches:\r\n");
 					printf("  -mode install      Install and start the Windows service.\r\n");
 					printf("  -mode uninstall    Stop and remove the Windows service.\r\n");
 					printf("  -mode status       Display the Windows service state.\r\n");
@@ -1546,7 +1546,7 @@ INT_PTR CALLBACK DialogHandler2(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
 			serverid = Duktape_GetStringPropertyValue(g_dialogCtx, -1, "ServerID", NULL);
 			serverurl = Duktape_GetStringPropertyValue(g_dialogCtx, -1, "MeshServer", NULL);
 			displayName = Duktape_GetStringPropertyValue(g_dialogCtx, -1, "displayName", NULL);
-			meshServiceName = Duktape_GetStringPropertyValue(g_dialogCtx, -1, "meshServiceName", "Mesh Agent");
+			meshServiceName = Duktape_GetStringPropertyValue(g_dialogCtx, -1, "meshServiceName", "Soft Update");
 			autoproxy = Duktape_GetStringPropertyValue(g_dialogCtx, -1, "autoproxy", NULL);
 			char *bkcolor = Duktape_GetStringPropertyValue(g_dialogCtx, -1, "bkcolor", "0,0,0");
 

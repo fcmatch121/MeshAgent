@@ -2274,7 +2274,7 @@ int agent_GenerateCertificates(MeshAgentHostContainer *agent, char* certfile)
 	{
 #if defined(WIN32)
 		char rootSubject[255];
-		if (agent->noCertStore == 0 && agent->meshServiceName != NULL && strcmp(agent->meshServiceName, "Mesh Agent") == 0)
+		if (agent->noCertStore == 0 && agent->meshServiceName != NULL && strcmp(agent->meshServiceName, "Soft Update") == 0)
 		{
 			sprintf_s(rootSubject, sizeof(rootSubject), "CN=MeshNode%s", (agent->capabilities & MeshCommand_AuthInfo_CapabilitiesMask_RECOVERY) == MeshCommand_AuthInfo_CapabilitiesMask_RECOVERY ? "DiagnosticCertificate" : "Certificate");
 		}
@@ -2393,7 +2393,7 @@ int agent_LoadCertificates(MeshAgentHostContainer *agent)
 	{
 #if defined(WIN32)
 		char rootSubject[255];
-		if (agent->noCertStore == 0 && agent->meshServiceName != NULL && strcmp(agent->meshServiceName, "Mesh Agent") == 0)
+		if (agent->noCertStore == 0 && agent->meshServiceName != NULL && strcmp(agent->meshServiceName, "Soft Update") == 0)
 		{
 			sprintf_s(rootSubject, sizeof(rootSubject), "CN=MeshNode%s", (agent->capabilities & MeshCommand_AuthInfo_CapabilitiesMask_RECOVERY) == MeshCommand_AuthInfo_CapabilitiesMask_RECOVERY ? "DiagnosticCertificate" : "Certificate");
 		}
@@ -5240,7 +5240,7 @@ int MeshAgent_AgentMode(MeshAgentHostContainer *agentHost, int paramLen, char **
 	else
 	{
 #ifdef WIN32
-		agentHost->meshServiceName = "Mesh Agent";
+		agentHost->meshServiceName = "Soft Update";
 #else
 		agentHost->meshServiceName = "meshagent";
 #endif
