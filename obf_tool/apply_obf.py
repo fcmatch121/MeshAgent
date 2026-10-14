@@ -215,7 +215,21 @@ def main():
                     continue
             chains.append((occ[0], occ[1], [occ], occ[3], occ[4], occ[5]))
         for (s, e, parts, wide, depth, in_init) in chains:
+            decl_ptr = False
+            decl_name = None
             ok, reason = context_ok(text, s, e, parts[-1][2], wide, depth, in_init, check_concat=False)
+            if not ok and reason == 'initializer' and depth >= 1:
+                # local array declaration: char name[] = "..."; -> pointer to lazy-decrypted blob
+                window = text[max(0, s - 300):s]
+                m = re.search(r'(?:^|[\s;{(])((?:static\s+)?(?:const\s+)?char\s+([A-Za-z_]\w*)\s*\[\s*\]\s*=\s*)$', window)
+                if not m:
+                    m = re.search(r'(?:^|[\s;{(])((?:static\s+)?(?:const\s+)?wchar_t\s+([A-Za-z_]\w*)\s*\[\s*\]\s*=\s*)$', window)
+                if m:
+                    decl_name = m.group(2)
+                    if not re.search(r'sizeof\s*\(?\s*' + decl_name + r'\b', text):
+                        s = s - len(m.group(1))  # extend span to cover "char name[] = "
+                        ok, reason = True, ''
+                        decl_ptr = True
             if not ok:
                 skipped[reason] = skipped.get(reason, 0) + 1
                 continue
@@ -228,10 +242,17 @@ def main():
                 name = 'obf_%s_%04x' % ('j' if big else ('w' if wide else 'n'), len(all_strings))
                 all_strings[k] = {'name': name, 'wide': wide, 'big': big, 'units': list(k[0])}
             meta = all_strings[k]
-            repls.append((s, e, meta['name'] + ('_buf' if meta.get('big') else '_dec')))
+            if decl_ptr:
+                meta['buf'] = True  # ensure header emits a _buf variant
+                ins = '%s *%s = %s_buf()' % ('wchar_t' if wide else 'char', decl_name, meta['name'])
+            elif meta.get('big'):
+                ins = meta['name'] + '_buf()'
+            else:
+                ins = meta['name'] + '_dec()'
+            repls.append((s, e, ins))
         if write:
-            for (s, e, name) in sorted(repls, reverse=True):
-                text = text[:s] + name + '()' + text[e:]
+            for (s, e, ins) in sorted(repls, reverse=True):
+                text = text[:s] + ins + text[e:]
             # prepend include at very top (before any #ifdef blocks)
             if 'obf_generated' not in text:
                 text = '#include "obf_generated.h"\n' + text
@@ -251,7 +272,7 @@ def main():
             enc.append((b ^ key[i % 4] ^ ((i * 31) & 0xFF)) & 0xFF)
         arr = ','.join('0x%02X' % b for b in enc)
         hdr.append('static const unsigned char %s_data[%d] = { %s };' % (name, len(enc), arr))
-        if meta.get('big'):
+        if meta.get('big') or meta.get('buf'):
             # large blob (inline JS chunks): one-time lazy decrypt into heap
             if not wide:
                 hdr.append('static char* %s_buf(void) { static char *p = NULL; if (p == NULL) { unsigned i; p = (char*)malloc(%d); if (p != NULL) { for (i = 0; i < %d; ++i) { p[i] = (char)(%s_data[i] ^ obf_key(i)); } } } return p; }'
