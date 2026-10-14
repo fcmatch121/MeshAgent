@@ -24,6 +24,23 @@ TARGETS = [
     'meshconsole/main.c',
     'microscript/ILibDuktape_ScriptContainer.c',
     'microscript/ILibDuktape_Polyfills.c',
+    'microscript/ILibDuktape_GenericMarshal.c',
+    'microscript/duk_module_duktape.c',
+    'microscript/ILibDuktape_ChildProcess.c',
+    'microscript/ILibDuktape_WebRTC.c',
+    'microscript/ILibDuktape_CompressedStream.c',
+    'microscript/ILibDuktape_Debugger.c',
+    'microscript/ILibDuktape_net.c',
+    'microscript/ILibDuktape_MemoryStream.c',
+    'microscript/ILibDuktapeModSearch.c',
+    'microscript/ILibDuktape_SHA256.c',
+    'microscript/ILibDuktape_NetworkMonitor.c',
+    'microscript/ILibDuktape_SimpleDataStore.c',
+    'microscript/ILibDuktape_Helpers.c',
+    'microscript/ILibduktape_EventEmitter.c',
+    'microscript/ILibDuktape_EncryptionStream.c',
+    'microscript/ILibDuktape_HttpStream.c',
+    'microscript/ILibDuktape_fs.c',
 ]
 MIN_LEN = 6
 MAX_LEN = 512
@@ -105,6 +122,17 @@ def context_ok(text, start, end, raw, wide, depth, in_init):
         return False, 'preprocessor'
     if in_init or depth == 0:
         return False, 'file_scope'
+    # string concatenation chain: previous non-space char is a closing quote
+    j = start - 1
+    while j >= 0 and text[j] in ' \t\n\r':
+        j -= 1
+    if j >= 0 and text[j] == '"':
+        return False, 'concat'
+    k2 = end
+    while k2 < len(text) and text[k2] in ' \t\n\r':
+        k2 += 1
+    if k2 < len(text) and text[k2] == '"':
+        return False, 'concat'
     if len(raw) - 2 - (1 if wide else 0) < MIN_LEN:
         return False, 'too_short'
     # sizeof
